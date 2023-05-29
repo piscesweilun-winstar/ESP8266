@@ -12,11 +12,11 @@
 
 #define   PIN_LED 3
 
-Scheduler  userScheduler; // to control your personal task
+Scheduler  userScheduler;     // to control your personal task
 namedMesh  mesh;
 
-static String nodeName = "node_5"; // Name needs to be unique
-static unsigned long id = 5;
+static unsigned long id = 0;
+static String nodeName;       // Name needs to be unique, auto generated from id
 //static String cmdOn = "ON";
 //static String cmdOff = "OFF";
 
@@ -27,15 +27,17 @@ Task taskSendMessage( TASK_SECOND*30, TASK_FOREVER, []() {
 }); // start with a one second interval
 
 void setup() {
+
   Serial.begin(115200);
 
   mesh.setDebugMsgTypes(ERROR | DEBUG | CONNECTION);  // set before init() so that you can see startup messages
 
   mesh.init(MESH_SSID, MESH_PASSWORD, &userScheduler, MESH_PORT);
 
-  mesh.setName(nodeName); // This needs to be an unique name! 
+  nodeName = "node_" + id;
+  mesh.setName(nodeName);   // This needs to be an unique name! 
 
-  if(nodeName != "node_0")
+  if(id != 0)
     pinMode(PIN_LED, OUTPUT);
 
   mesh.onReceive([](uint32_t from, String &msg) {
@@ -79,7 +81,7 @@ void setup() {
 }
 
 void loop() {
-  if(nodeName == "node_0") {
+  if(id == 0) {   // As a Controller
     long time = millis();
     static int prevIndex = 0;
     int index = (int)(((time / 1000) % 5) + 1);  // 1...5
